@@ -51,8 +51,10 @@ from m5.params import NULL
 from m5.util import addToPath, fatal, warn
 
 addToPath('../')
+addToPath('./gem5/configs')
 
-from ruby import Ruby
+
+# from ruby import Ruby
 
 from common import Options
 from common import Simulation
@@ -124,6 +126,9 @@ if '--ruby' in sys.argv:
     Ruby.define_options(parser)
 
 args = parser.parse_args()
+
+if not hasattr(args, 'l3cache'): # dummy simple soln
+    args.l3cache = False
 
 multiprocesses = []
 numThreads = 1
@@ -259,7 +264,27 @@ else:
     MemClass = Simulation.setMemClass(args)
     system.membus = SystemXBar()
     system.system_port = system.membus.cpu_side_ports
-    CacheConfig.config_cache(args, system)
+
+    for i in range(np):
+        system.cpu[i].createInterruptController()
+        system.cpu[i].interrupts[0].pio = system.membus.mem_side_ports
+        system.cpu[i].interrupts[0].int_requestor = \
+            system.membus.cpu_side_ports
+        system.cpu[i].interrupts[0].int_responder = \
+            system.membus.mem_side_ports
+
+    if not args.l3cache:
+        system.monitor = CommMonitor()
+        system.monitor.trace = MemTraceProbe(trace_file = "trace.ptrc.gz")
+        system.to_monitor_bus = L2XBar(clk_domain=system.cpu_clk_domain)
+        system.to_monitor_bus.mem_side_ports = system.monitor.cpu_side_port
+
+        for cpu in system.cpu:
+            cpu.icache_port = system.to_monitor_bus.cpu_side_ports
+            cpu.dcache_port = system.to_monitor_bus.cpu_side_ports
+        system.monitor.mem_side_port = system.membus.cpu_side_ports
+    else:
+        CacheConfig.config_cache_l3(args, system)
     MemConfig.config_mem(args, system)
     config_filesystem(system, args)
 
@@ -268,5 +293,27 @@ system.workload = SEWorkload.init_compatible(mp0_path)
 if args.wait_gdb:
     system.workload.wait_for_remote_gdb = True
 
+# root = Root(full_system = False, system = system)
+# Simulation.run(args, root, system, FutureClass)
+
+system.exit_on_work_items = True
+
 root = Root(full_system = False, system = system)
-Simulation.run(args, root, system, FutureClass)
+m5.instantiate()
+
+print("Beginning simulation!")
+while True:
+    event = m5.simulate()
+    cause = event.getCause()
+    code = event.getCode()
+    tick = m5.curTick()
+
+    print(f"EXIT: tick={tick} cause={cause} code={code}")
+
+    if cause == "workbegin":
+        print(f"ITER_BEGIN t={code} tick={tick}")
+    elif cause == "workend":
+        print(f"ITER_END   t={code} tick={tick}")
+    elif "exiting with last active thread context" in cause:
+        print(f"Program finished at tick {tick}")
+        break
