@@ -55,6 +55,7 @@
 #include "base/output.hh"
 #include "cpu/base.hh"
 #include "cpu/thread_context.hh"
+#include "debug/DRAMOpt.hh"
 #include "debug/Loader.hh"
 #include "debug/Quiesce.hh"
 #include "debug/WorkItems.hh"
@@ -598,30 +599,29 @@ void
 dram_opt(ThreadContext *tc, uint64_t workid, uint64_t threadid)
 {
     std::cout << "hello from inside dram_opt" << std::endl;
-    // const System::Params &params = sys->params();
-
-    DPRINTF(WorkItems, "DRAM opt workid: %d, threadid %d\n", workid, \
+    DPRINTF(DRAMOpt, "DRAM opt workid: %d, threadid %d\n", workid, \
             threadid);
+    static std::ofstream markerLog("m5out/dram_opt_markers.txt");
+    markerLog << curTick() << ": DRAM_Opt called\n";
+    markerLog.flush();
 }
 void
 dram_opt_enter(ThreadContext *tc, uint64_t workid, uint64_t threadid)
 {
-    DPRINTF(PseudoInst, "pseudo_inst::dram_opt_enter(%i, %i)\n", \
+    DPRINTF(DRAMOpt, "pseudo_inst::dram_opt_enter(%i, %i)\n", \
         workid, threadid);
-    // System *sys = tc->getSystemPtr();
-    // const System::Params &params = sys->params();
-
-    DPRINTF(WorkItems, "DRAM opt enter workid: %d, threadid %d\n", \
-        workid, threadid);
+        static std::ofstream markerLog("m5out/dram_opt_markers_enter.txt");
+        markerLog << curTick() << ": DRAM_Opt_Enter called\n";
+        markerLog.flush();
 }
 void
 dram_opt_exit(ThreadContext *tc, uint64_t workid, uint64_t threadid)
 {
-    // System *sys = tc->getSystemPtr();
-    // const System::Params &params = sys->params();
-
-    DPRINTF(WorkItems, "DRAM opt exit workid: %d, threadid %d\n", workid,
+    DPRINTF(DRAMOpt, "DRAM opt exit workid: %d, threadid %d\n", workid,
             threadid);
+    static std::ofstream markerLog("m5out/dram_opt_markers_exit.txt");
+    markerLog << curTick() << ": DRAM_Opt_Exit called\n";
+    markerLog.flush();
 }
 } // namespace pseudo_inst
 } // namespace gem5
