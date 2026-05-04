@@ -92,6 +92,9 @@ void debugbreak(ThreadContext *tc);
 void switchcpu(ThreadContext *tc);
 void workbegin(ThreadContext *tc, uint64_t workid, uint64_t threadid);
 void workend(ThreadContext *tc, uint64_t workid, uint64_t threadid);
+void dram_opt(ThreadContext *tc, uint64_t workid, uint64_t threadid);
+void dram_opt_enter(ThreadContext *tc, uint64_t workid, uint64_t threadid);
+void dram_opt_exit(ThreadContext *tc, uint64_t workid, uint64_t threadid);
 void m5Syscall(ThreadContext *tc);
 void togglesync(ThreadContext *tc);
 void triggerWorkloadEvent(ThreadContext *tc);
@@ -214,9 +217,15 @@ pseudoInstWork(ThreadContext *tc, uint8_t func, uint64_t &result)
         invokeSimcall<ABI>(tc, workend);
         return true;
 
-      case M5OP_RESERVED1:
-      case M5OP_RESERVED2:
-      case M5OP_RESERVED3:
+      case M5OP_DRAM_OPT:
+        invokeSimcall<ABI>(tc, dram_opt);
+        return true;
+      case M5OP_DRAM_OPT_ENTER:
+        invokeSimcall<ABI>(tc, dram_opt_enter);
+        return true;
+      case M5OP_DRAM_OPT_EXIT:
+        invokeSimcall<ABI>(tc, dram_opt_exit);
+        return true;
       case M5OP_RESERVED4:
       case M5OP_RESERVED5:
         warn("Unimplemented m5 op (%#x)\n", func);

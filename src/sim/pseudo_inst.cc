@@ -594,6 +594,34 @@ workend(ThreadContext *tc, uint64_t workid, uint64_t threadid)
         }
     }
 }
+void
+dram_opt(ThreadContext *tc, uint64_t workid, uint64_t threadid)
+{
+    std::cout << "hello from inside dram_opt" << std::endl;
+    // const System::Params &params = sys->params();
 
+    DPRINTF(WorkItems, "DRAM opt workid: %d, threadid %d\n", workid, \
+            threadid);
+}
+void
+dram_opt_enter(ThreadContext *tc, uint64_t workid, uint64_t threadid)
+{
+    DPRINTF(PseudoInst, "pseudo_inst::dram_opt_enter(%i, %i)\n", \
+        workid, threadid);
+    // System *sys = tc->getSystemPtr();
+    // const System::Params &params = sys->params();
+
+    DPRINTF(WorkItems, "DRAM opt enter workid: %d, threadid %d\n", \
+        workid, threadid);
+}
+void
+dram_opt_exit(ThreadContext *tc, uint64_t workid, uint64_t threadid)
+{
+    // System *sys = tc->getSystemPtr();
+    // const System::Params &params = sys->params();
+
+    DPRINTF(WorkItems, "DRAM opt exit workid: %d, threadid %d\n", workid,
+            threadid);
+}
 } // namespace pseudo_inst
 } // namespace gem5
