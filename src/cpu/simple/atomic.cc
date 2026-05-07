@@ -394,6 +394,8 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t *data, unsigned size,
         }
         if (thread->dramOptHintPending) {
             req->setFlags(Request::DRAM_OPT_HINT);
+        }  else {
+            req->clearFlags(Request::DRAM_OPT_HINT);
         }
         // Now do the access.
         if (predicate && fault == NoFault &&

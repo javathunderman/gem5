@@ -103,8 +103,11 @@ def main():
                                 opt_set:
                 opt_set = False
                 print("set to false", packet.tick)
-            ascii_out.write('%s,%s,%s,%s,%s' % (cmd, packet.addr, packet.size,
-                            packet.flags, packet.tick))
+            ascii_out.write('%s,%s,%s,%s,%s,%s' % (cmd, packet.addr, \
+                            packet.size,
+                            packet.flags, \
+                            packet.tick, \
+                            '1' if opt_set else '0'))
         else:
             ascii_out.write('%s,%s,%s,%s' % (cmd, packet.addr, packet.size,
                                            packet.tick))
