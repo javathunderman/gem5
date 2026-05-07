@@ -135,7 +135,7 @@ class Request
         STRICT_ORDER                = 0x00000800,
         /** This request is made in privileged mode. */
         PRIVILEGED                  = 0x00008000,
-
+        DRAM_OPT_HINT               = 0x00004000,
         /**
          * This is a write that is targeted and zeroing an entire
          * cache block.  There is no need for a read/modify/write
@@ -1002,6 +1002,7 @@ class Request
 
     /** Accessor functions for flags. Note that these are for testing
         only; setting flags should be done via setFlags(). */
+    bool isDramOptHint() const { return _flags.isSet(DRAM_OPT_HINT); }
     bool isUncacheable() const { return _flags.isSet(UNCACHEABLE); }
     bool isStrictlyOrdered() const { return _flags.isSet(STRICT_ORDER); }
     bool isInstFetch() const { return _flags.isSet(INST_FETCH); }

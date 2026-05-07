@@ -54,6 +54,7 @@
 #include "base/debug.hh"
 #include "base/output.hh"
 #include "cpu/base.hh"
+#include "cpu/simple_thread.hh"
 #include "cpu/thread_context.hh"
 #include "debug/DRAMOpt.hh"
 #include "debug/Loader.hh"
@@ -613,6 +614,12 @@ dram_opt_enter(ThreadContext *tc, uint64_t workid, uint64_t threadid)
         static std::ofstream markerLog("m5out/dram_opt_markers_enter.txt");
         markerLog << curTick() << ": DRAM_Opt_Enter called\n";
         markerLog.flush();
+    SimpleThread *thread = dynamic_cast<SimpleThread *>(tc->getCpuPtr()->\
+                                            getContext(tc->threadId()));
+    if (thread) {
+        thread->dramOptHintPending = true;
+        // std::cout << "setting hint" << std::endl;
+    }
 }
 void
 dram_opt_exit(ThreadContext *tc, uint64_t workid, uint64_t threadid)
@@ -622,6 +629,12 @@ dram_opt_exit(ThreadContext *tc, uint64_t workid, uint64_t threadid)
     static std::ofstream markerLog("m5out/dram_opt_markers_exit.txt");
     markerLog << curTick() << ": DRAM_Opt_Exit called\n";
     markerLog.flush();
+    SimpleThread *thread = dynamic_cast<SimpleThread *>(tc->getCpuPtr()->\
+                                                getContext(tc->threadId()));
+    if (thread) {
+        thread->dramOptHintPending = false;
+        // std::cout << "unsetting hint" << std::endl;
+    }
 }
 } // namespace pseudo_inst
 } // namespace gem5
