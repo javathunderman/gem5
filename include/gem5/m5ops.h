@@ -67,8 +67,10 @@ void m5_panic(void);
 void m5_work_begin(uint64_t workid, uint64_t threadid);
 void m5_work_end(uint64_t workid, uint64_t threadid);
 void m5_dram_opt(uint64_t workid, uint64_t threadid);
-void m5_dram_opt_enter(uint64_t workid, uint64_t threadid);
-void m5_dram_opt_exit(uint64_t workid, uint64_t threadid);
+void m5_dram_opt_enter(uint64_t workid, uint64_t threadid, \
+    void *ptr, uint64_t size);
+void m5_dram_opt_exit(uint64_t workid, uint64_t threadid, \
+    void *ptr, uint64_t size);
 
 /*
  * Send a very generic poke to the workload so it can do something. It's up to

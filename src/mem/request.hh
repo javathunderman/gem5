@@ -135,7 +135,9 @@ class Request
         STRICT_ORDER                = 0x00000800,
         /** This request is made in privileged mode. */
         PRIVILEGED                  = 0x00008000,
-        DRAM_OPT_HINT               = 0x00004000,
+        DRAM_OPT_HINT_ON            = 0x00004000,
+        DRAM_OPT_HINT_OFF           = 0x00020000,
+
         /**
          * This is a write that is targeted and zeroing an entire
          * cache block.  There is no need for a read/modify/write

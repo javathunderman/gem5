@@ -51,6 +51,7 @@
 #include <string>
 #include <vector>
 
+#include "arch/generic/mmu.hh"
 #include "base/debug.hh"
 #include "base/output.hh"
 #include "cpu/base.hh"
@@ -607,7 +608,8 @@ dram_opt(ThreadContext *tc, uint64_t workid, uint64_t threadid)
     markerLog.flush();
 }
 void
-dram_opt_enter(ThreadContext *tc, uint64_t workid, uint64_t threadid)
+dram_opt_enter(ThreadContext *tc, uint64_t workid, uint64_t threadid, \
+    Addr vaddr, uint64_t size)
 {
     DPRINTF(DRAMOpt, "pseudo_inst::dram_opt_enter(%i, %i)\n", \
         workid, threadid);
@@ -617,12 +619,45 @@ dram_opt_enter(ThreadContext *tc, uint64_t workid, uint64_t threadid)
     SimpleThread *thread = dynamic_cast<SimpleThread *>(tc->getCpuPtr()->\
                                             getContext(tc->threadId()));
     if (thread) {
-        thread->dramOptHintPending = true;
-        // std::cout << "setting hint" << std::endl;
+        thread->dramOptHintEnable = true;
+        thread->dramOptHintDisable = false;
+        std::cout << "vaddr " << vaddr << " size " << size << std::endl;
+        auto req = std::make_shared<Request>(
+            vaddr,
+            sizeof(void*),
+            0,
+            Request::funcRequestorId,
+            0,
+            tc->contextId()
+        );
+        Fault fault = tc->getMMUPtr()->\
+            translateFunctional(req, tc, BaseMMU::Read);
+        if (fault != NoFault) {
+            warn("dram_opt_enter: address translation failed for vaddr %#x: ",
+                vaddr);
+        }
+        Addr paddr;
+        if (req->hasPaddr()) {
+            paddr = req->getPaddr();
+            std::cout << paddr << std::endl;
+        } else {
+            warn("dram_opt_enter: no physical address found via MMU \
+                translation vaddr: %#x: ", vaddr);
+            bool success = tc->getProcessPtr()->\
+                pTable->translate(vaddr, paddr);
+            if (success) {
+                std::cout << "found via SE mode " \
+                    << paddr << std::endl;
+            } else {
+                warn("dram_opt_enter: no physical address \
+                    found via SE vaddr: %#x: ", vaddr);
+            }
+        }
     }
 }
 void
-dram_opt_exit(ThreadContext *tc, uint64_t workid, uint64_t threadid)
+dram_opt_exit(ThreadContext *tc, uint64_t workid, uint64_t threadid, \
+    Addr vaddr, uint64_t size)
 {
     DPRINTF(DRAMOpt, "DRAM opt exit workid: %d, threadid %d\n", workid,
             threadid);
@@ -632,7 +667,8 @@ dram_opt_exit(ThreadContext *tc, uint64_t workid, uint64_t threadid)
     SimpleThread *thread = dynamic_cast<SimpleThread *>(tc->getCpuPtr()->\
                                                 getContext(tc->threadId()));
     if (thread) {
-        thread->dramOptHintPending = false;
+        thread->dramOptHintEnable = false;
+        thread->dramOptHintDisable = true;
         // std::cout << "unsetting hint" << std::endl;
     }
 }

@@ -93,8 +93,10 @@ void switchcpu(ThreadContext *tc);
 void workbegin(ThreadContext *tc, uint64_t workid, uint64_t threadid);
 void workend(ThreadContext *tc, uint64_t workid, uint64_t threadid);
 void dram_opt(ThreadContext *tc, uint64_t workid, uint64_t threadid);
-void dram_opt_enter(ThreadContext *tc, uint64_t workid, uint64_t threadid);
-void dram_opt_exit(ThreadContext *tc, uint64_t workid, uint64_t threadid);
+void dram_opt_enter(ThreadContext *tc, uint64_t workid, \
+  uint64_t threadid, Addr vaddr, uint64_t size);
+void dram_opt_exit(ThreadContext *tc, uint64_t workid, \
+  uint64_t threadid, Addr vaddr, uint64_t size);
 void m5Syscall(ThreadContext *tc);
 void togglesync(ThreadContext *tc);
 void triggerWorkloadEvent(ThreadContext *tc);

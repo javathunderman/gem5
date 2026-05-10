@@ -392,10 +392,15 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t *data, unsigned size,
             fault = thread->mmu->translateAtomic(req, thread->getTC(),
                                                  BaseMMU::Read);
         }
-        if (thread->dramOptHintPending) {
-            req->setFlags(Request::DRAM_OPT_HINT);
+        if (thread->dramOptHintEnable) {
+            req->setFlags(Request::DRAM_OPT_HINT_ON);
         }  else {
-            req->clearFlags(Request::DRAM_OPT_HINT);
+            req->clearFlags(Request::DRAM_OPT_HINT_ON);
+        }
+        if (thread->dramOptHintDisable) {
+            req->setFlags(Request::DRAM_OPT_HINT_OFF);
+        } else {
+            req->clearFlags(Request::DRAM_OPT_HINT_ON);
         }
         // Now do the access.
         if (predicate && fault == NoFault &&

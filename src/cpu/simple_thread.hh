@@ -96,7 +96,9 @@ class SimpleThread : public ThreadState, public ThreadContext
 {
   public:
     typedef ThreadContext::Status Status;
-    bool dramOptHintPending = false;
+    bool dramOptHintEnable = false;
+    bool dramOptHintDisable = false;
+    unsigned int stream_current;
   protected:
     std::array<RegFile, CCRegClass + 1> regFiles;
 
