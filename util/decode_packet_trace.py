@@ -95,12 +95,11 @@ def main():
             ascii_out.write('%s,' % (packet.pkt_id))
         if packet.HasField('flags'):
             if packet.cmd == 1 and bool(packet.flags & 0x00004000) and \
-                        not bool(packet.flags & 0x00000100) and not opt_set:
+                        not bool(packet.flags & 0x00000100):
                 opt_set = True
                 print("set to true", packet.tick)
-            elif packet.cmd == 1 and not bool(packet.flags & 0x00004000) and \
-                                not bool(packet.flags & 0x00000100) and \
-                                opt_set:
+            if packet.cmd == 1 and bool(packet.flags & 0x00020000) and \
+                                not bool(packet.flags & 0x00000100):
                 opt_set = False
                 print("set to false", packet.tick)
             ascii_out.write('%s,%s,%s,%s,%s,%s' % (cmd, packet.addr, \
@@ -115,6 +114,12 @@ def main():
             ascii_out.write(',%s\n' % (packet.pc))
         else:
             ascii_out.write('\n')
+        if packet.HasField('opt_stream_id'):
+            if packet.opt_stream_id != 1:
+                print(packet.opt_stream_id)
+        if packet.HasField('stream_size'):
+            if packet.stream_size != 0:
+                print(packet.stream_size)
 
     print("Parsed packets:", num_packets)
 

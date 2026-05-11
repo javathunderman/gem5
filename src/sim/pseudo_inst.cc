@@ -653,6 +653,9 @@ dram_opt_enter(ThreadContext *tc, uint64_t workid, uint64_t threadid, \
                     found via SE vaddr: %#x: ", vaddr);
             }
         }
+        thread->stream_ids.emplace(vaddr, \
+            std::make_pair(thread->opt_stream_id, size));
+        thread->opt_stream_id++;
     }
 }
 void

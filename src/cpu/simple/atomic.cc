@@ -394,11 +394,19 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t *data, unsigned size,
         }
         if (thread->dramOptHintEnable) {
             req->setFlags(Request::DRAM_OPT_HINT_ON);
+            thread->dramOptHintEnable = false;
+            if (auto res = thread->stream_ids.find(addr); \
+                res != thread->stream_ids.end())
+                req->setOptStreamId(res->first);
         }  else {
             req->clearFlags(Request::DRAM_OPT_HINT_ON);
         }
         if (thread->dramOptHintDisable) {
             req->setFlags(Request::DRAM_OPT_HINT_OFF);
+            thread->dramOptHintDisable = false;
+            if (auto res = thread->stream_ids.find(addr); \
+                res != thread->stream_ids.end())
+                req->setOptStreamId(res->first);
         } else {
             req->clearFlags(Request::DRAM_OPT_HINT_ON);
         }

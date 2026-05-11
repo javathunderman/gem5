@@ -446,6 +446,8 @@ class Request
 
     /** The virtual address of the request. */
     Addr _vaddr = MaxAddr;
+    uint64_t stream_size = 0;
+    uint64_t opt_stream_id = 1;
 
     /**
      * Extra data for the request, such as the return value of
@@ -838,6 +840,30 @@ class Request
         return _vaddr;
     }
 
+    uint64_t
+    getStreamSize()
+    {
+        return stream_size;
+    }
+
+    uint64_t
+    getOptStreamId()
+    {
+        return opt_stream_id;
+    }
+
+    void
+    setStreamSize(uint64_t s_size)
+    {
+        stream_size = s_size;
+    }
+
+    void
+    setOptStreamId(uint64_t s_id)
+    {
+        opt_stream_id = s_id;
+    }
+
     /** Accesssor for the requestor id. */
     RequestorID
     requestorId() const
@@ -1004,7 +1030,8 @@ class Request
 
     /** Accessor functions for flags. Note that these are for testing
         only; setting flags should be done via setFlags(). */
-    bool isDramOptHint() const { return _flags.isSet(DRAM_OPT_HINT); }
+    bool isDramOptHintOn() const { return _flags.isSet(DRAM_OPT_HINT_ON); }
+    bool isDramOptHintOff() const { return _flags.isSet(DRAM_OPT_HINT_OFF); }
     bool isUncacheable() const { return _flags.isSet(UNCACHEABLE); }
     bool isStrictlyOrdered() const { return _flags.isSet(STRICT_ORDER); }
     bool isInstFetch() const { return _flags.isSet(INST_FETCH); }

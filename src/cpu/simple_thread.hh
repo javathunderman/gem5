@@ -98,7 +98,9 @@ class SimpleThread : public ThreadState, public ThreadContext
     typedef ThreadContext::Status Status;
     bool dramOptHintEnable = false;
     bool dramOptHintDisable = false;
-    unsigned int stream_current;
+    unsigned int opt_stream_id = 1;
+    std::unordered_map<int, std::pair<int, int>> stream_ids;
+    // key is vaddr, val is stream ID (first) and size (second)
   protected:
     std::array<RegFile, CCRegClass + 1> regFiles;
 

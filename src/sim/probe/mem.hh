@@ -63,6 +63,8 @@ struct PacketInfo
     Request::FlagsType flags;
     Addr pc;
     RequestorID id;
+    uint64_t opt_stream_id;
+    uint64_t stream_size;
 
     explicit PacketInfo(const PacketPtr& pkt) :
         cmd(pkt->cmd),
@@ -70,7 +72,9 @@ struct PacketInfo
         size(pkt->getSize()),
         flags(pkt->req->getFlags()),
         pc(pkt->req->hasPC() ? pkt->req->getPC() : 0),
-        id(pkt->req->requestorId())  { }
+        id(pkt->req->requestorId()),
+        opt_stream_id(pkt->req->getOptStreamId()),
+        stream_size(pkt->req->getStreamSize())  { }
 };
 
 /**
