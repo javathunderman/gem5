@@ -85,7 +85,6 @@ def main():
 
     num_packets = 0
     packet = packet_pb2.Packet()
-    opt_set = False
     # Decode the packet messages until we hit the end of the file
     while protolib.decodeMessage(proto_in, packet):
         num_packets += 1
@@ -94,19 +93,19 @@ def main():
         if packet.HasField('pkt_id'):
             ascii_out.write('%s,' % (packet.pkt_id))
         if packet.HasField('flags'):
-            if packet.cmd == 1 and bool(packet.flags & 0x00004000) and \
-                        not bool(packet.flags & 0x00000100):
-                opt_set = True
-                print("set to true", packet.tick)
-            if packet.cmd == 1 and bool(packet.flags & 0x00020000) and \
-                                not bool(packet.flags & 0x00000100):
-                opt_set = False
-                print("set to false", packet.tick)
-            ascii_out.write('%s,%s,%s,%s,%s,%s' % (cmd, packet.addr, \
+            opt_flag = (bool(packet.flags & 0x00004000) or \
+                bool(packet.flags & 0x00020000)) \
+                and not bool(packet.flags & 0x00000100)
+            if opt_flag:
+                print(packet.tick)
+            ascii_out.write('%s,%s,%s,%s,%s,%s%s' % (cmd, packet.addr, \
                             packet.size,
                             packet.flags, \
                             packet.tick, \
-                            '1' if opt_set else '0'))
+                            packet.opt_stream_id \
+                                if (opt_flag) else '0', \
+                                ',' + str(packet.stream_size)  \
+                                if (opt_flag) else ''))
         else:
             ascii_out.write('%s,%s,%s,%s' % (cmd, packet.addr, packet.size,
                                            packet.tick))
@@ -114,12 +113,7 @@ def main():
             ascii_out.write(',%s\n' % (packet.pc))
         else:
             ascii_out.write('\n')
-        if packet.HasField('opt_stream_id'):
-            if packet.opt_stream_id != 1:
-                print(packet.opt_stream_id)
-        if packet.HasField('stream_size'):
-            if packet.stream_size != 0:
-                print(packet.stream_size)
+
 
     print("Parsed packets:", num_packets)
 

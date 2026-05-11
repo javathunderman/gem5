@@ -121,7 +121,9 @@ MemTraceProbe::handleRequest(const probing::PacketInfo &pkt_info)
         pkt_msg.set_pc(pkt_info.pc);
     pkt_msg.set_pkt_id(pkt_info.id);
     pkt_msg.set_opt_stream_id(pkt_info.opt_stream_id);
-    pkt_msg.set_stream_size(pkt_info.stream_size);
+    if (pkt_info.flags & 0x00004000 || pkt_info.flags & 0x00020000) {
+        pkt_msg.set_stream_size(pkt_info.stream_size);
+    }
 
     traceStream->write(pkt_msg);
 }

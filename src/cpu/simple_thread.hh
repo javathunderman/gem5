@@ -99,7 +99,7 @@ class SimpleThread : public ThreadState, public ThreadContext
     bool dramOptHintEnable = false;
     bool dramOptHintDisable = false;
     unsigned int opt_stream_id = 1;
-    std::unordered_map<int, std::pair<int, int>> stream_ids;
+    std::unordered_map<uint64_t, std::pair<unsigned int, uint64_t>> stream_ids;
     // key is vaddr, val is stream ID (first) and size (second)
   protected:
     std::array<RegFile, CCRegClass + 1> regFiles;

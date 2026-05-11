@@ -394,21 +394,72 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t *data, unsigned size,
         }
         if (thread->dramOptHintEnable) {
             req->setFlags(Request::DRAM_OPT_HINT_ON);
-            thread->dramOptHintEnable = false;
-            if (auto res = thread->stream_ids.find(addr); \
-                res != thread->stream_ids.end())
-                req->setOptStreamId(res->first);
-        }  else {
-            req->clearFlags(Request::DRAM_OPT_HINT_ON);
+            for (const auto& [vaddr, val] : thread->stream_ids) {
+                Addr entryPaddr = 0;
+                bool translated = thread->getProcessPtr()->\
+                    pTable->translate(vaddr, entryPaddr);
+                if (translated) {
+                    std::cout << "DRAM OPT ON: vaddr=" << std::hex << vaddr
+                        << " entryPaddr=" << entryPaddr
+                        << " extent= " << (vaddr + val.second)
+                        << " inputAddr=" << addr << std::dec << std::endl;
+                    if (addr < (vaddr + val.second)) {
+                        std::cout << "match found, assign stream ID: " \
+                            << val.first << std::endl;
+                        req->setOptStreamId(val.first);
+                        req->setStreamSize(val.second);
+                        break;
+                    }
+
+                }
+            }
         }
         if (thread->dramOptHintDisable) {
             req->setFlags(Request::DRAM_OPT_HINT_OFF);
-            thread->dramOptHintDisable = false;
-            if (auto res = thread->stream_ids.find(addr); \
-                res != thread->stream_ids.end())
-                req->setOptStreamId(res->first);
-        } else {
+
+            uint64_t map_res = 0;
+            for (const auto& [vaddr, val] : thread->stream_ids) {
+                Addr entryPaddr = 0;
+                bool translated = thread->getProcessPtr()->\
+                    pTable->translate(vaddr, entryPaddr);
+                if (translated) {
+                    std::cout << "DRAM OPT OFF: vaddr=" << std::hex << vaddr
+                        << " entryPaddr=" << entryPaddr
+                        << " extent= " << (vaddr + val.second)
+                        << " inputAddr=" << addr << std::dec << std::endl;
+                    if (addr < (vaddr + val.second)) {
+                        std::cout << "match found, assign stream ID: "\
+                         << val.first << std::endl;
+                        req->setOptStreamId(val.first);
+                        req->setStreamSize(val.second);
+                        map_res = vaddr;
+                        break;
+                    }
+                } else {
+                    std::cout << "DRAM OPT OFF: Address translation \
+                    failed! vaddr=" << std::hex << vaddr
+                        << " entryPaddr=" << entryPaddr
+                        << " extent= " << (vaddr + val.second)
+                        << " inputAddr=" << addr << std::dec << std::endl;
+                }
+            }
+            if (map_res != 0) {
+                thread->stream_ids.erase(map_res);
+            }
+        }
+        if (!thread->dramOptHintDisable && \
+                !thread->dramOptHintEnable) {
+            // if neither flag was set,
+            // clear the bit flags and set the stream ID to 0
+            req->clearFlags(Request::DRAM_OPT_HINT_OFF);
             req->clearFlags(Request::DRAM_OPT_HINT_ON);
+            req->setOptStreamId((uint64_t) 0);
+        }
+        if (thread->dramOptHintDisable || \
+            thread->dramOptHintEnable) {
+            // clear flags for future packets
+            thread->dramOptHintDisable = false;
+            thread->dramOptHintEnable = false;
         }
         // Now do the access.
         if (predicate && fault == NoFault &&
