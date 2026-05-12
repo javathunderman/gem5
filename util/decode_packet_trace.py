@@ -92,20 +92,22 @@ def main():
         cmd = 'r' if packet.cmd == 1 else ('w' if packet.cmd == 4 else 'u')
         if packet.HasField('pkt_id'):
             ascii_out.write('%s,' % (packet.pkt_id))
+        opt_hint_out = ""
         if packet.HasField('flags'):
             opt_flag = (bool(packet.flags & 0x00004000) or \
                 bool(packet.flags & 0x00020000)) \
                 and not bool(packet.flags & 0x00000100)
             if opt_flag:
                 print(packet.tick)
+                opt_hint_out += "," + str(packet.stream_size)
             ascii_out.write('%s,%s,%s,%s,%s,%s%s' % (cmd, packet.addr, \
                             packet.size,
                             packet.flags, \
                             packet.tick, \
                             packet.opt_stream_id \
                                 if (opt_flag) else '0', \
-                                ',' + str(packet.stream_size)  \
-                                if (opt_flag) else ''))
+                                "," + str((packet.flags & 0x00020000) >> 17) \
+                                + opt_hint_out))
         else:
             ascii_out.write('%s,%s,%s,%s' % (cmd, packet.addr, packet.size,
                                            packet.tick))
